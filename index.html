@@ -32,16 +32,31 @@
             fd.append('playerName', name);
 
             status.innerText = "Procesando subida...";
+            status.style.color = "cyan";
 
-            const res = await fetch('/api/upload', { method: 'POST', body: fd });
-            const data = await res.json();
-            
-            if(data.success) {
-                status.innerText = data.msg;
-                status.style.color = "cyan";
-            } else {
-                status.innerText = "Error: " + data.error;
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                
+                // PREVENCIÓN DEL ERROR DE JSON: Verificamos si la respuesta es JSON antes de procesar
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error(`El servidor devolvió un error (Código ${res.status}). La ruta /api/upload no se encuentra o falló.`);
+                }
+
+                const data = await res.json();
+                
+                if(data.success) {
+                    status.innerText = data.msg;
+                    status.style.color = "cyan";
+                } else {
+                    status.innerText = "Error: " + data.error;
+                    status.style.color = "red";
+                }
+            } catch (error) {
+                // Capturamos el error profundo si el fetch o el parseo fallan
+                status.innerText = "Fallo de conexión: " + error.message;
                 status.style.color = "red";
+                console.error("Error capturado:", error);
             }
         };
     </script>
