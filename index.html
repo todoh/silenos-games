@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sube tu juego a mi cuenta</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #121212; color: #00ff00; display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        .upload-card { border: 2px solid #00ff00; padding: 20px; border-radius: 8px; box-shadow: 0 0 15px #00ff00; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; background: #000; border: 1px solid #00ff00; color: #0ff; font-weight: bold; }
+        button:hover { background: #00ff00; color: #000; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="upload-card">
+        <h2>SUBIR NUEVO JUEGO</h2>
+        <input type="text" id="pName" placeholder="Nombre del Autor">
+        <input type="file" id="gFile" accept=".html">
+        <button id="upBtn">ENVIAR A ITCH.IO</button>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        document.getElementById('upBtn').onclick = async () => {
+            const file = document.getElementById('gFile').files[0];
+            const name = document.getElementById('pName').value;
+            const status = document.getElementById('status');
+
+            if(!file || !name) return alert("Rellena todo.");
+
+            const fd = new FormData();
+            fd.append('gameFile', file);
+            fd.append('playerName', name);
+
+            status.innerText = "Procesando subida...";
+
+            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+            const data = await res.json();
+            
+            if(data.success) {
+                status.innerText = data.msg;
+                status.style.color = "cyan";
+            } else {
+                status.innerText = "Error: " + data.error;
+                status.style.color = "red";
+            }
+        };
+    </script>
+</body>
+</html>
